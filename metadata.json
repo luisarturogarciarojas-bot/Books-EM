@@ -1,0 +1,8 @@
+{
+  "name": "Ebook",
+  "description": "Catálogo y librería online con compras por WhatsApp y panel de administración en pantalla completa.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
