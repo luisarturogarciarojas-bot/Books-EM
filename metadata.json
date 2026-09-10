@@ -1,6 +1,6 @@
 {
   "name": "Ebook",
-  "description": "Catálogo y librería online con compras por WhatsApp y panel de administración en pantalla completa.",
+  "description": "Catálogo y librería online Books EM con compras por WhatsApp y panel de administración.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
