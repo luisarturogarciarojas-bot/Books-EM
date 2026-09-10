@@ -13,6 +13,7 @@ import { Footer } from './components/Footer';
 import { BookDetailModal } from './components/BookDetailModal';
 import { WishlistModal } from './components/WishlistModal';
 import { AdminLoginView } from './components/admin/AdminLoginView';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { MessageCircle, Loader2 } from 'lucide-react';
 import { cleanPhoneNumber } from './utils/helpers';
 import { Book } from './types';
@@ -48,6 +49,12 @@ export default function App() {
     toggleWishlist,
     refreshBcvRates,
     updateBcvRates,
+    catalogs,
+    addCatalog,
+    updateCatalog,
+    deleteCatalog,
+    reorderCatalogs,
+    resetCatalogs,
     loginAdmin,
     logoutAdmin,
   } = useBooksStore();
@@ -55,6 +62,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [directEditBook, setDirectEditBook] = useState<Book | null>(null);
+  const [manualInstallTrigger, setManualInstallTrigger] = useState(false);
 
   const scrollToCatalog = () => {
     const el = document.getElementById('catalog-section');
@@ -106,6 +114,12 @@ export default function App() {
           bcvRates={bcvRates}
           onRefreshRates={refreshBcvRates}
           onUpdateRates={updateBcvRates}
+          catalogs={catalogs}
+          onAddCatalog={addCatalog}
+          onUpdateCatalog={updateCatalog}
+          onDeleteCatalog={deleteCatalog}
+          onReorderCatalogs={reorderCatalogs}
+          onResetCatalogs={resetCatalogs}
           isExpanded={isAdminOpen}
           onToggleExpand={setIsAdminOpen}
           onClose={() => setIsAdminOpen(false)}
@@ -143,6 +157,7 @@ export default function App() {
         onScrollToHowToBuy={scrollToHowToBuy}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onOpenInstallPrompt={() => setManualInstallTrigger(true)}
       />
 
       {/* Main Content Area */}
@@ -155,6 +170,7 @@ export default function App() {
           onScrollToCatalog={scrollToCatalog}
           onSelectGenre={setSelectedGenre}
           selectedGenre={selectedGenre}
+          catalogs={catalogs}
         />
 
         {/* Public Catalog with Filters, Search, and Book Cards */}
@@ -163,6 +179,7 @@ export default function App() {
           settings={settings}
           wishlistIds={wishlistIds}
           bcvRates={bcvRates}
+          catalogs={catalogs}
           onToggleWishlist={toggleWishlist}
           onSelectBook={(book) => setSelectedBook(book)}
           searchQuery={searchQuery}
@@ -181,7 +198,10 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <Footer settings={settings} />
+      <Footer
+        settings={settings}
+        onOpenInstallPrompt={() => setManualInstallTrigger(true)}
+      />
 
       {/* Book Detailed Modal */}
       {selectedBook && (
@@ -227,6 +247,11 @@ export default function App() {
           ¿Deseas consultar un libro?
         </span>
       </a>
+      {/* Floating PWA Install Prompt Banner (Only when not installed, auto-dismiss in 14s or manually) */}
+      <PWAInstallPrompt
+        manualTrigger={manualInstallTrigger}
+        onManualTriggerHandled={() => setManualInstallTrigger(false)}
+      />
     </div>
   );
 }

@@ -10,12 +10,13 @@ import {
   X,
   CheckCircle2,
   TrendingUp,
+  Tags,
 } from 'lucide-react';
 import { Book } from '../../types';
 import { formatPrice, getStatusDetails } from '../../utils/helpers';
 import { BcvRates, calculateBcvBreakdown } from '../../services/bcvRates';
 
-export type AdminTab = 'publications' | 'whatsapp' | 'store' | 'rates';
+export type AdminTab = 'publications' | 'catalogs' | 'whatsapp' | 'store' | 'rates';
 export type ViewMode = 'grid' | 'table';
 
 interface AdminBottomDockProps {
@@ -25,6 +26,7 @@ interface AdminBottomDockProps {
   currencySymbol: string;
   bcvRates?: BcvRates;
   totalBooksCount: number;
+  catalogsCount?: number;
   onOpenAddModal: () => void;
   onEditSelected: () => void;
   onDeselect: () => void;
@@ -40,6 +42,7 @@ export const AdminBottomDock: React.FC<AdminBottomDockProps> = ({
   currencySymbol,
   bcvRates,
   totalBooksCount,
+  catalogsCount = 0,
   onOpenAddModal,
   onEditSelected,
   onDeselect,
@@ -160,14 +163,14 @@ export const AdminBottomDock: React.FC<AdminBottomDockProps> = ({
           {/* Tabs Container */}
           <nav
             aria-label="Secciones del panel de administración"
-            className="flex-1 grid grid-cols-4 gap-1 sm:gap-2"
+            className="flex-1 grid grid-cols-5 gap-1 sm:gap-1.5"
           >
             {/* Tab 1: Publicaciones */}
             <button
               type="button"
               id="dock-tab-publications"
               onClick={() => onTabChange('publications')}
-              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all cursor-pointer select-none ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1 sm:px-2.5 rounded-xl transition-all cursor-pointer select-none ${
                 activeTab === 'publications'
                   ? 'bg-[#5C3218] text-white shadow-sm ring-1 ring-[#5C3218]'
                   : 'bg-[#FAF7F2] text-[#6E5A4E] hover:bg-[#F2ECE4] border border-[#E8DFC8]'
@@ -186,7 +189,7 @@ export const AdminBottomDock: React.FC<AdminBottomDockProps> = ({
                 </span>
               </div>
               <div className="text-center sm:text-left leading-tight">
-                <span className="block text-[10px] sm:text-xs font-bold tracking-tight">
+                <span className="block text-[9px] sm:text-xs font-bold tracking-tight">
                   Publicaciones
                 </span>
                 <span className="hidden lg:block text-[9px] opacity-80">
@@ -195,12 +198,47 @@ export const AdminBottomDock: React.FC<AdminBottomDockProps> = ({
               </div>
             </button>
 
-            {/* Tab 2: Tasas del Día (BCV) */}
+            {/* Tab 2: Catálogos / Géneros */}
+            <button
+              type="button"
+              id="dock-tab-catalogs"
+              onClick={() => onTabChange('catalogs')}
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1 sm:px-2.5 rounded-xl transition-all cursor-pointer select-none ${
+                activeTab === 'catalogs'
+                  ? 'bg-[#5C3218] text-white shadow-sm ring-1 ring-[#5C3218]'
+                  : 'bg-[#FAF7F2] text-[#6E5A4E] hover:bg-[#F2ECE4] border border-[#E8DFC8]'
+              }`}
+            >
+              <div className="relative flex items-center justify-center">
+                <Tags className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0" />
+                {catalogsCount > 0 && (
+                  <span
+                    className={`hidden md:inline-block ml-1 text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                      activeTab === 'catalogs'
+                        ? 'bg-white/25 text-white'
+                        : 'bg-[#EAE0D3] text-[#5C3218]'
+                    }`}
+                  >
+                    {catalogsCount}
+                  </span>
+                )}
+              </div>
+              <div className="text-center sm:text-left leading-tight">
+                <span className="block text-[9px] sm:text-xs font-bold tracking-tight">
+                  Catálogos
+                </span>
+                <span className="hidden lg:block text-[9px] opacity-80">
+                  Explorar género
+                </span>
+              </div>
+            </button>
+
+            {/* Tab 3: Tasas del Día (BCV) */}
             <button
               type="button"
               id="dock-tab-rates"
               onClick={() => onTabChange('rates')}
-              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl transition-all cursor-pointer select-none ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1 sm:px-2.5 rounded-xl transition-all cursor-pointer select-none ${
                 activeTab === 'rates'
                   ? 'bg-[#5C3218] text-white shadow-sm ring-1 ring-[#5C3218]'
                   : 'bg-[#FAF7F2] text-[#6E5A4E] hover:bg-[#F2ECE4] border border-[#E8DFC8]'
@@ -214,7 +252,7 @@ export const AdminBottomDock: React.FC<AdminBottomDockProps> = ({
                 />
               </div>
               <div className="text-center sm:text-left leading-tight">
-                <span className="block text-[10px] sm:text-xs font-bold tracking-tight">
+                <span className="block text-[9px] sm:text-xs font-bold tracking-tight">
                   Tasas del Día
                 </span>
                 <span className="hidden lg:block text-[9px] opacity-80">

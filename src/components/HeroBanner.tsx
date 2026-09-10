@@ -15,10 +15,10 @@ interface HeroBannerProps {
   onScrollToCatalog: () => void;
   onSelectGenre: (genre: string) => void;
   selectedGenre: string;
+  catalogs?: string[];
 }
 
-const POPULAR_GENRES = [
-  'Todos',
+const DEFAULT_POPULAR_GENRES = [
   'Realismo Mágico',
   'Desarrollo Personal',
   'Misterio y Novela',
@@ -32,6 +32,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onScrollToCatalog,
   onSelectGenre,
   selectedGenre,
+  catalogs,
 }) => {
   return (
     <section className="relative overflow-hidden bg-[#FAF7F2] border-b border-[#EAE1D3] py-10 sm:py-14 lg:py-16">
@@ -132,13 +133,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 Explorar por género
               </span>
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5">
-                {POPULAR_GENRES.map((genre) => {
-                  const isActive = (genre === 'Todos' && !selectedGenre) || selectedGenre === genre;
+                {['Todos', ...(catalogs && catalogs.length > 0 ? catalogs : DEFAULT_POPULAR_GENRES)].map((genre) => {
+                  const isTodos = genre === 'Todos';
+                  const isActive = (isTodos && !selectedGenre) || (Boolean(selectedGenre) && selectedGenre.trim().toLowerCase() === genre.trim().toLowerCase());
                   return (
                     <button
                       key={genre}
                       onClick={() => {
-                        onSelectGenre(genre === 'Todos' ? '' : genre);
+                        onSelectGenre(isTodos ? '' : genre);
                         onScrollToCatalog();
                       }}
                       className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${

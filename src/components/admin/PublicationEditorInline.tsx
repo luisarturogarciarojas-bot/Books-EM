@@ -23,6 +23,7 @@ interface PublicationEditorInlineProps {
   bookToEdit: Book | null;
   currencySymbol: string;
   bcvRates?: BcvRates;
+  catalogs?: string[];
   onClose: () => void;
   onSave: (bookData: Omit<Book, 'id' | 'createdAt'>, existingId?: string) => void;
 }
@@ -45,6 +46,7 @@ export const PublicationEditorInline: React.FC<PublicationEditorInlineProps> = (
   bookToEdit,
   currencySymbol,
   bcvRates,
+  catalogs,
   onClose,
   onSave,
 }) => {
@@ -339,13 +341,13 @@ export const PublicationEditorInline: React.FC<PublicationEditorInlineProps> = (
                     className="w-full px-3.5 py-2 bg-[#FAF7F2] border border-[#E5DACB] rounded-xl text-sm text-[#2D241E] focus:outline-none focus:border-[#8C5E3C] focus:bg-white"
                   />
                   <div className="flex flex-wrap gap-1">
-                    {COMMON_GENRES.slice(0, 6).map((g) => (
+                    {(catalogs && catalogs.length > 0 ? catalogs : COMMON_GENRES).slice(0, 10).map((g) => (
                       <button
                         type="button"
                         key={g}
                         onClick={() => setGenre(g)}
                         className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
-                          genre === g
+                          genre.toLowerCase() === g.toLowerCase()
                             ? 'bg-[#5C3218] text-white border-[#5C3218] font-bold'
                             : 'bg-white text-[#735F52] hover:bg-[#FAF7F2] border-[#E8DFC8]'
                         }`}

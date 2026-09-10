@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Heart, MessageCircle, Menu, X, Search } from 'lucide-react';
+import { Heart, MessageCircle, Menu, X, Search, Download } from 'lucide-react';
 import { StoreSettings } from '../types';
 import { cleanPhoneNumber } from '../utils/helpers';
 import { BooksEmLogo } from './BotanicalElements';
 import { BcvRates } from '../services/bcvRates';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface HeaderProps {
   settings: StoreSettings;
@@ -15,6 +16,7 @@ interface HeaderProps {
   onScrollToHowToBuy: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  onOpenInstallPrompt?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,9 +28,11 @@ export const Header: React.FC<HeaderProps> = ({
   onScrollToHowToBuy,
   searchQuery,
   onSearchChange,
+  onOpenInstallPrompt,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const { isInstalled } = usePWAInstall();
 
   // Secret Triple-click detection on the main brand logo on the left side to open Admin Panel
   const logoClicksRef = useRef<number>(0);
@@ -126,6 +130,19 @@ export const Header: React.FC<HeaderProps> = ({
               <Heart className={`w-5 h-5 ${wishlistCount > 0 ? 'fill-[#C05621] text-[#C05621]' : 'text-[#6B4E3D]'}`} />
               <span className="text-xs font-semibold">{wishlistCount > 0 ? wishlistCount : ''}</span>
             </button>
+
+            {/* Optional Install App Button (Visible only if not already installed) */}
+            {!isInstalled && onOpenInstallPrompt && (
+              <button
+                onClick={onOpenInstallPrompt}
+                id="header-install-app-btn"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#5C3218] hover:text-[#3B2213] bg-[#EFE8DF] hover:bg-[#E5DACB] rounded-full transition-all cursor-pointer shadow-2xs"
+                title="Instalar aplicación en tu dispositivo"
+              >
+                <Download className="w-3.5 h-3.5 text-[#8C5E3C]" />
+                <span>Instalar App</span>
+              </button>
+            )}
 
             {/* WhatsApp Contact Action */}
             <a
@@ -228,6 +245,21 @@ export const Header: React.FC<HeaderProps> = ({
                 {wishlistCount}
               </span>
             </button>
+
+            {!isInstalled && onOpenInstallPrompt && (
+              <button
+                onClick={() => {
+                  onOpenInstallPrompt();
+                  setMobileMenuOpen(false);
+                }}
+                id="mobile-install-app-btn"
+                className="flex items-center gap-2.5 w-full text-left px-3 py-2 text-base font-medium text-[#5C3218] bg-[#F4EDE4] hover:bg-[#EAE0D3] rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4 text-[#8C5E3C]" />
+                <span>Instalar Aplicación en tu Dispositivo</span>
+              </button>
+            )}
+
             <a
               href={generalWhatsAppUrl}
               target="_blank"

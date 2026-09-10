@@ -7,6 +7,16 @@ const BOOKS_STORAGE_KEY = 'books_em_catalog_v1';
 const SETTINGS_STORAGE_KEY = 'books_em_settings_v1';
 const WISHLIST_STORAGE_KEY = 'books_em_wishlist_v1';
 const ADMIN_SESSION_KEY = 'books_em_admin_session_v1';
+const CATALOGS_STORAGE_KEY = 'books_em_catalogs_v1';
+
+export const DEFAULT_CATALOGS: string[] = [
+  'Realismo Mágico',
+  'Desarrollo Personal',
+  'Misterio y Novela',
+  'Ciencia Ficción Distópica',
+  'Clásicos y Filosofía',
+  'Romance y Clásicos',
+];
 
 export function useBooksStore() {
   const [bcvRates, setBcvRates] = useState<BcvRates>(getStoredBcvRates);
@@ -77,6 +87,21 @@ export function useBooksStore() {
     return [];
   });
 
+  const [catalogs, setCatalogs] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(CATALOGS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((c: unknown) => String(c).trim()).filter(Boolean);
+        }
+      }
+    } catch (e) {
+      console.error('Error reading catalogs from localStorage:', e);
+    }
+    return DEFAULT_CATALOGS;
+  });
+
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
     try {
       return localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
@@ -113,6 +138,14 @@ export function useBooksStore() {
       console.error('Error saving wishlist to localStorage:', e);
     }
   }, [wishlistIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CATALOGS_STORAGE_KEY, JSON.stringify(catalogs));
+    } catch (e) {
+      console.error('Error saving catalogs to localStorage:', e);
+    }
+  }, [catalogs]);
 
   useEffect(() => {
     try {
@@ -183,9 +216,84 @@ export function useBooksStore() {
     setBooks(INITIAL_BOOKS);
     setSettings(DEFAULT_STORE_SETTINGS);
     setWishlistIds([]);
+    setCatalogs(DEFAULT_CATALOGS);
     localStorage.removeItem(BOOKS_STORAGE_KEY);
     localStorage.removeItem(SETTINGS_STORAGE_KEY);
     localStorage.removeItem(WISHLIST_STORAGE_KEY);
+    localStorage.removeItem(CATALOGS_STORAGE_KEY);
+  };
+
+  const addCatalog = (name: string): { success: boolean; error?: string } => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return { success: false, error: 'El nombre del catálogo no puede estar vacío.' };
+    }
+    if (catalogs.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      return { success: false, error: 'Ya existe un catálogo con este nombre.' };
+    }
+    setCatalogs((prev) => [...prev, trimmed]);
+    return { success: true };
+  };
+
+  const updateCatalog = (
+    oldName: string,
+    newName: string,
+    updateBooks = true
+  ): { success: boolean; error?: string } => {
+    const trimmedNew = newName.trim();
+    if (!trimmedNew) {
+      return { success: false, error: 'El nombre del catálogo no puede estar vacío.' };
+    }
+    if (
+      oldName.toLowerCase() !== trimmedNew.toLowerCase() &&
+      catalogs.some((c) => c.toLowerCase() === trimmedNew.toLowerCase())
+    ) {
+      return { success: false, error: 'Ya existe otro catálogo con este nombre.' };
+    }
+
+    setCatalogs((prev) => prev.map((c) => (c === oldName ? trimmedNew : c)));
+
+    if (updateBooks) {
+      setBooks((prevBooks) =>
+        prevBooks.map((b) =>
+          b.genre?.trim().toLowerCase() === oldName.trim().toLowerCase()
+            ? { ...b, genre: trimmedNew }
+            : b
+        )
+      );
+    }
+    return { success: true };
+  };
+
+  const deleteCatalog = (
+    nameToDelete: string,
+    reassignTo?: string
+  ): { success: boolean } => {
+    setCatalogs((prev) => prev.filter((c) => c !== nameToDelete));
+    if (reassignTo) {
+      const target = reassignTo.trim();
+      setBooks((prevBooks) =>
+        prevBooks.map((b) =>
+          b.genre?.trim().toLowerCase() === nameToDelete.trim().toLowerCase()
+            ? { ...b, genre: target }
+            : b
+        )
+      );
+    }
+    return { success: true };
+  };
+
+  const reorderCatalogs = (newOrder: string[]) => {
+    setCatalogs(newOrder);
+  };
+
+  const resetCatalogs = () => {
+    setCatalogs(DEFAULT_CATALOGS);
+    try {
+      localStorage.setItem(CATALOGS_STORAGE_KEY, JSON.stringify(DEFAULT_CATALOGS));
+    } catch (e) {
+      console.warn('Error resetting catalogs:', e);
+    }
   };
 
   const importCatalog = (importedBooks: Book[]) => {
@@ -260,6 +368,12 @@ export function useBooksStore() {
     resetToDefaults,
     importCatalog,
     toggleWishlist,
+    catalogs,
+    addCatalog,
+    updateCatalog,
+    deleteCatalog,
+    reorderCatalogs,
+    resetCatalogs,
     loginAdmin,
     logoutAdmin,
   };

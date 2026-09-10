@@ -10,6 +10,7 @@ interface BookCatalogProps {
   settings: StoreSettings;
   wishlistIds: string[];
   bcvRates?: BcvRates;
+  catalogs?: string[];
   onToggleWishlist: (id: string) => void;
   onSelectBook: (book: Book) => void;
   searchQuery: string;
@@ -25,6 +26,7 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
   settings,
   wishlistIds,
   bcvRates,
+  catalogs,
   onToggleWishlist,
   onSelectBook,
   searchQuery,
@@ -40,14 +42,14 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 
-  // Derive unique genres and authors
+  // Derive unique genres and configured catalogs
   const allGenres = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(catalogs || []);
     books.forEach((b) => {
       if (b.genre) set.add(b.genre.trim());
     });
-    return Array.from(set).sort();
-  }, [books]);
+    return Array.from(set).filter(Boolean);
+  }, [books, catalogs]);
 
   const allAuthors = useMemo(() => {
     const set = new Set<string>();
@@ -73,8 +75,11 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
           }
         }
 
-        // Genre
-        if (selectedGenre && book.genre !== selectedGenre) {
+        // Genre (case and trim insensitive)
+        if (
+          selectedGenre &&
+          (!book.genre || book.genre.trim().toLowerCase() !== selectedGenre.trim().toLowerCase())
+        ) {
           return false;
         }
 

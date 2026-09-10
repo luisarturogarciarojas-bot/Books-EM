@@ -1,13 +1,16 @@
 import React from 'react';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin, Download } from 'lucide-react';
 import { StoreSettings } from '../types';
 import { BooksEmLogo } from './BotanicalElements';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface FooterProps {
   settings: StoreSettings;
+  onOpenInstallPrompt?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ settings }) => {
+export const Footer: React.FC<FooterProps> = ({ settings, onOpenInstallPrompt }) => {
+  const { isInstalled } = usePWAInstall();
   return (
     <footer className="bg-[#2C211A] text-[#D8C7B9] border-t border-[#443328] pt-14 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,6 +46,18 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
                   ¿Cómo solicitar por WhatsApp?
                 </a>
               </li>
+              {!isInstalled && onOpenInstallPrompt && (
+                <li>
+                  <button
+                    onClick={onOpenInstallPrompt}
+                    id="footer-install-app-btn"
+                    className="hover:text-white transition-colors flex items-center gap-1.5 text-left cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#C49B76]" />
+                    <span>Instalar app en tu dispositivo</span>
+                  </button>
+                </li>
+              )}
               <li>
                 <span className="text-[#8C7464]">Pedidos especiales bajo encargo</span>
               </li>

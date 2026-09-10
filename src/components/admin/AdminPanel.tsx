@@ -24,6 +24,7 @@ import {
   DollarSign,
   X,
   TrendingUp,
+  Tags,
 } from 'lucide-react';
 import { Book, BookStatus, StoreSettings } from '../../types';
 import { formatPrice, getStatusDetails, buildWhatsAppMessage, cleanPhoneNumber } from '../../utils/helpers';
@@ -32,6 +33,7 @@ import { PublicationCard } from './PublicationCard';
 import { PublicationEditorInline } from './PublicationEditorInline';
 import { AdminBottomDock, AdminTab, ViewMode } from './AdminBottomDock';
 import { AdminRatesMonitor } from './AdminRatesMonitor';
+import { CatalogsManager } from './CatalogsManager';
 
 interface AdminPanelProps {
   books: Book[];
@@ -39,6 +41,12 @@ interface AdminPanelProps {
   bcvRates?: BcvRates;
   onRefreshRates?: () => Promise<void | BcvRates>;
   onUpdateRates?: (rates: BcvRates) => void;
+  catalogs?: string[];
+  onAddCatalog?: (name: string) => { success: boolean; error?: string };
+  onUpdateCatalog?: (oldName: string, newName: string, updateBooks?: boolean) => { success: boolean; error?: string };
+  onDeleteCatalog?: (nameToDelete: string, reassignTo?: string) => { success: boolean };
+  onReorderCatalogs?: (newOrder: string[]) => void;
+  onResetCatalogs?: () => void;
   isExpanded?: boolean;
   onToggleExpand?: (expanded: boolean) => void;
   onClose: () => void;
@@ -63,6 +71,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   bcvRates,
   onRefreshRates,
   onUpdateRates,
+  catalogs = [],
+  onAddCatalog,
+  onUpdateCatalog,
+  onDeleteCatalog,
+  onReorderCatalogs,
+  onResetCatalogs,
   onClose,
   onLogout,
   onAddBook,
@@ -373,6 +387,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <span>Publicaciones ({books.length})</span>
               </>
             )}
+            {activeTab === 'catalogs' && (
+              <>
+                <Tags className="w-3.5 h-3.5 text-[#8C5E3C]" />
+                <span>Catálogos ({catalogs.length})</span>
+              </>
+            )}
             {activeTab === 'rates' && (
               <>
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
@@ -407,6 +427,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 bookToEdit={editingBook}
                 currencySymbol={settings.currencySymbol}
                 bcvRates={bcvRates}
+                catalogs={catalogs}
                 onClose={() => {
                   setIsEditorModalOpen(false);
                   setEditingBook(null);
@@ -810,7 +831,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* SECCIÓN 2: WHATSAPP */}
+        {/* SECCIÓN 2: CATÁLOGOS Y GÉNEROS (Explorar género en portada) */}
+        {/* ========================================================================= */}
+        {activeTab === 'catalogs' && (
+          <div className="max-w-6xl mx-auto">
+            <CatalogsManager
+              catalogs={catalogs}
+              books={books}
+              onAddCatalog={onAddCatalog || (() => ({ success: false, error: 'No disponible' }))}
+              onUpdateCatalog={onUpdateCatalog || (() => ({ success: false, error: 'No disponible' }))}
+              onDeleteCatalog={onDeleteCatalog || (() => ({ success: false }))}
+              onReorderCatalogs={onReorderCatalogs || (() => {})}
+              onResetCatalogs={onResetCatalogs || (() => {})}
+              onFilterByCatalog={(catalogName) => {
+                setInventorySearch(catalogName);
+                setInventoryStatus('all');
+                setActiveTab('publications');
+              }}
+            />
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SECCIÓN 3: WHATSAPP */}
         {/* ========================================================================= */}
         {activeTab === 'whatsapp' && (
           <div className="max-w-4xl mx-auto space-y-6">
@@ -1186,6 +1229,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           currencySymbol={settings.currencySymbol}
           bcvRates={bcvRates}
           totalBooksCount={books.length}
+          catalogsCount={catalogs.length}
           onOpenAddModal={handleOpenAddModal}
           onEditSelected={() => {
             if (selectedBook) {
